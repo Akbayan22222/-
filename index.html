@@ -196,6 +196,49 @@
       justify-content: flex-end;
     }
 
+    .menu-toggle {
+      display: none;
+      width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.65);
+      color: var(--text);
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+      transition: 0.3s;
+      font-family: inherit;
+    }
+
+    .menu-toggle span {
+      position: absolute;
+      left: 11px;
+      width: 22px;
+      height: 2px;
+      border-radius: 999px;
+      background: currentColor;
+      transition: 0.3s ease;
+    }
+
+    .menu-toggle span:nth-child(1) { top: 14px; }
+    .menu-toggle span:nth-child(2) { top: 21px; }
+    .menu-toggle span:nth-child(3) { top: 28px; }
+
+    .nav.menu-open .menu-toggle span:nth-child(1) {
+      top: 21px;
+      transform: rotate(45deg);
+    }
+
+    .nav.menu-open .menu-toggle span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .nav.menu-open .menu-toggle span:nth-child(3) {
+      top: 21px;
+      transform: rotate(-45deg);
+    }
+
     .nav-links a, .dropdown-btn, .toggle-btn {
       padding: 10px 16px;
       border-radius: 999px;
@@ -1009,9 +1052,13 @@
         flex-wrap: wrap;
       }
 
+      .menu-toggle {
+        display: block;
+      }
+
       .brand {
         gap: 10px;
-        max-width: 100%;
+        max-width: calc(100% - 58px);
       }
 
       .brand-badge {
@@ -1027,29 +1074,60 @@
       }
 
       .nav-links {
-        display: flex;
         width: 100%;
-        justify-content: flex-start;
-        flex-wrap: wrap;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        display: grid;
+        grid-template-columns: 1fr;
         gap: 8px;
+        padding-top: 0;
+        transition: max-height 0.35s ease, opacity 0.25s ease, padding-top 0.25s ease;
+      }
+
+      .nav.menu-open .nav-links {
+        max-height: 85vh;
+        opacity: 1;
+        padding-top: 10px;
+        overflow-y: auto;
       }
 
       .nav-links a,
       .dropdown-btn,
-      .toggle-btn {
-        padding: 10px 14px;
+      .toggle-btn,
+      .cta {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+        padding: 12px 14px;
         font-size: 14px;
+        background: rgba(255,255,255,0.45);
+      }
+
+      .dropdown {
+        width: 100%;
       }
 
       .dropdown-menu {
-        left: 0;
-        transform: translateX(0) translateY(10px);
-        min-width: 240px;
+        position: static;
+        transform: none;
+        min-width: 100%;
+        margin-top: 8px;
+        border-radius: 18px;
+        display: none;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
       }
 
-      .dropdown:hover .dropdown-menu,
+      .dropdown:hover .dropdown-menu {
+        display: none;
+        transform: none;
+      }
+
       .dropdown.active .dropdown-menu {
-        transform: translateX(0) translateY(0);
+        display: grid;
+        transform: none;
       }
 
       .hero-panel {
@@ -1201,35 +1279,6 @@
 
       .nav-links {
         gap: 6px;
-      }
-
-      .nav-links a,
-      .dropdown-btn,
-      .toggle-btn,
-      .cta {
-        width: 100%;
-        text-align: center;
-        justify-content: center;
-      }
-
-      .dropdown {
-        width: 100%;
-      }
-
-      .dropdown-menu {
-        position: static;
-        transform: none;
-        min-width: 100%;
-        margin-top: 8px;
-        border-radius: 18px;
-        display: none;
-        opacity: 1;
-        visibility: visible;
-        pointer-events: auto;
-      }
-
-      .dropdown.active .dropdown-menu {
-        display: grid;
       }
 
       .hero {
@@ -1479,7 +1528,13 @@
         </div>
       </div>
 
-      <div class="nav-links">
+      <button class="menu-toggle" id="menuToggle" aria-label="Мәзірді ашу" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <div class="nav-links" id="navLinks">
         <a href="#top">Басты бет</a>
         <a href="#about">Біз туралы</a>
 
@@ -1904,7 +1959,7 @@
 
     <section id="staff">
       <div class="section-head reveal">
-        <h2>Персонал</h2>
+        <h2>БАЛБАҚША ҰЖЫМЫ</h2>
         <p>
           Біздің ұжым — кәсібилік пен мейірімділікті қатар ұстанатын, әр баланың жүрегіне жол таба білетін мамандардан құралған.
         </p>
@@ -2053,6 +2108,9 @@
     const sky = document.getElementById('sky');
     const cursorGlow = document.getElementById('cursorGlow');
     const themeToggle = document.getElementById('themeToggle');
+    const menuToggle = document.getElementById('menuToggle');
+    const nav = document.querySelector('.nav');
+    const navLinks = document.getElementById('navLinks');
     const docDropdown = document.getElementById('docDropdown');
     const dropdownBtn = docDropdown.querySelector('.dropdown-btn');
     const staffDropdown = document.getElementById('staffDropdown');
@@ -2111,17 +2169,38 @@
       themeToggle.textContent = document.body.classList.contains('night') ? '☀️' : '🌙';
     });
 
+    menuToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = nav.classList.toggle('menu-open');
+      menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      docDropdown.classList.remove('active');
+      staffDropdown.classList.remove('active');
+    });
+
     dropdownBtn.addEventListener('click', (e) => {
       e.stopPropagation();
+      staffDropdown.classList.remove('active');
       docDropdown.classList.toggle('active');
     });
 
     staffDropdownBtn.addEventListener('click', (e) => {
       e.stopPropagation();
+      docDropdown.classList.remove('active');
       staffDropdown.classList.toggle('active');
     });
 
+    navLinks.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A') {
+        nav.classList.remove('menu-open');
+        menuToggle.setAttribute('aria-expanded', 'false');
+        docDropdown.classList.remove('active');
+        staffDropdown.classList.remove('active');
+      }
+    });
+
     document.addEventListener('click', () => {
+      nav.classList.remove('menu-open');
+      menuToggle.setAttribute('aria-expanded', 'false');
       docDropdown.classList.remove('active');
       staffDropdown.classList.remove('active');
     });
